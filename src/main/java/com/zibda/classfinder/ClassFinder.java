@@ -1,5 +1,6 @@
 package com.zibda.classfinder;
 
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -10,41 +11,72 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by ZeBr on 17.02.2022.
+ * Created by Dziber on 17.02.2022.
  */
+
 public class ClassFinder {
 
+    /**
+     * Method to find class name from list of classes/
+     *
+     * @param classesPath   - path to file with class names
+     * @param searchPattern - pattern for search
+     * @return - list of classes that were found
+     */
     public List<String> findClasses(String classesPath, String searchPattern) {
         List<String> classes = readClasses(classesPath);
         List<String> result = new ArrayList<>();
 
         for (String className : classes) {
             String classForSearch = className.substring(className.lastIndexOf(".") + 1);
+            boolean classIsFound = false;
+            boolean isLowerCasePattern = false;
             if (searchPattern.toLowerCase().equals(searchPattern)) {
                 classForSearch = classForSearch.toLowerCase();
+                isLowerCasePattern = true;
             }
-
-            boolean classNotMatch = false;
             for (int i = 0; i < searchPattern.length(); i++) {
+                classIsFound = false;
                 char patternLetter = searchPattern.charAt(i);
-                int foundLetterIndex = classForSearch.indexOf(patternLetter);
-
-                if (foundLetterIndex >= 0) {
-                    classForSearch = classForSearch.substring(foundLetterIndex + 1);
+                if (patternLetter == '*') {
+                    classForSearch = classForSearch.substring(1);
+                    classIsFound = true;
+                } else if (patternLetter == ' ' && (i == searchPattern.length() - 1)) {
+                    if (classForSearch.isEmpty() || lastLettersEquals(classForSearch, searchPattern)) {
+                        classIsFound = true;
+                    }
                 } else {
-                    classNotMatch = true;
-                    break;
+                    int letterIndex = classForSearch.indexOf(patternLetter);
+                    if (isLetterFound(isLowerCasePattern, patternLetter, letterIndex)) {
+                        classForSearch = classForSearch.substring(letterIndex + 1);
+                        classIsFound = true;
+                    } else {
+                        break;
+                    }
                 }
             }
-
-            if (!classNotMatch) {
+            if (classIsFound) {
                 result.add(className);
             }
-
         }
 
-
+        ClassNameComparator classNameComparator = new ClassNameComparator();
+        result.sort(classNameComparator);
         return result;
+    }
+
+
+    private boolean lastLettersEquals(String classForSearch, String searchPattern) {
+        return searchPattern.charAt(searchPattern.trim().length() - 1) == classForSearch.charAt(classForSearch.length() - 1);
+    }
+
+
+    private boolean isLetterFound(boolean isLowerCasePattern, char patternLetter, int letterIndex) {
+        if (isLowerCasePattern || Character.isUpperCase(patternLetter)) {
+            return letterIndex >= 0;
+        } else {
+            return letterIndex == 0;
+        }
     }
 
 
@@ -54,7 +86,7 @@ public class ClassFinder {
         try {
             lines = Files.readAllLines(path, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            //Must be logger in real life
+            //Here must be logger in real life
             System.out.println("Error while reading from file");
             e.printStackTrace();
         }

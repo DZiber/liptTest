@@ -36,24 +36,23 @@ public class ClassFinder {
                 isLowerCasePattern = true;
             }
             for (int i = 0; i < searchPattern.length(); i++) {
-                classIsFound = false;
                 char patternLetter = searchPattern.charAt(i);
                 if (patternLetter == '*') {
                     classForSearch = classForSearch.substring(1);
-                    classIsFound = true;
                 } else if (patternLetter == ' ' && (i == searchPattern.length() - 1)) {
-                    if (classForSearch.isEmpty() || lastLettersEquals(classForSearch, searchPattern)) {
-                        classIsFound = true;
+                    if (!classForSearch.isEmpty()) {
+                        classIsFound = lastLettersEquals(classForSearch, searchPattern);
+                        break;
                     }
                 } else {
                     int letterIndex = classForSearch.indexOf(patternLetter);
                     if (isLetterFound(isLowerCasePattern, patternLetter, letterIndex)) {
                         classForSearch = classForSearch.substring(letterIndex + 1);
-                        classIsFound = true;
                     } else {
                         break;
                     }
                 }
+                classIsFound = (i == (searchPattern.length()-1));
             }
             if (classIsFound) {
                 result.add(className);

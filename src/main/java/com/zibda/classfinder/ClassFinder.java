@@ -37,7 +37,7 @@ public class ClassFinder {
             }
             for (int i = 0; i < searchPattern.length(); i++) {
                 char patternLetter = searchPattern.charAt(i);
-                if (patternLetter == '*') {
+                if (patternLetter == '*' && !classForSearch.isEmpty()) {
                     classForSearch = classForSearch.substring(1);
                 } else if (patternLetter == ' ' && (i == searchPattern.length() - 1)) {
                     if (!classForSearch.isEmpty()) {
